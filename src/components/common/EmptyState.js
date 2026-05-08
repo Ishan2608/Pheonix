@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import AppText from './AppText';
 import AppButton from './AppButton';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function EmptyState({ icon = 'inbox', title, subtitle, actionLabel, onAction }) {
   const { colors, radius } = useTheme();
