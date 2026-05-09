@@ -21,7 +21,7 @@ export const useTaskStore = create((set, get) => ({
     const { tasks } = get();
     const newTask = {
       ...data,
-      id: generateId(),
+      id: data.id || generateId(),
       completed: false,
       createdAt: Date.now(),
     };

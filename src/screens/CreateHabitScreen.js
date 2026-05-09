@@ -11,6 +11,7 @@ import { useHabitStore } from '../store/habitStore';
 import { useTagStore } from '../store/tagStore';
 import AppText from '../components/common/AppText';
 import AppButton from '../components/common/AppButton';
+import DateTimeInput from '../components/common/DateTimeInput';
 import { formatDate } from '../utils/dateUtils';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -32,6 +33,7 @@ export default function CreateHabitScreen() {
   const [selectedTags, setSelectedTags] = useState(existing?.tags || []);
   const [newTagInput, setNewTagInput] = useState('');
   const [activeDays, setActiveDays] = useState(existing?.activeDays || DAY_KEYS);
+  const [startDate, setStartDate] = useState(existing?.startDate ? new Date(existing.startDate) : new Date());
   const [type, setType] = useState(existing?.type || 'action');
   const [goal, setGoal] = useState(String(existing?.goal || ''));
   const [unit, setUnit] = useState(existing?.unit || '');
@@ -56,7 +58,7 @@ export default function CreateHabitScreen() {
       title: title.trim(),
       description: description.trim(),
       tags: selectedTags,
-      startDate: existing?.startDate || formatDate(new Date()),
+      startDate: existing?.startDate || formatDate(startDate),
       activeDays,
       type,
       goal: type === 'progress' ? parseFloat(goal) || 1 : undefined,
@@ -115,6 +117,9 @@ export default function CreateHabitScreen() {
             <Feather name="plus" size={16} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
+
+        {/* Start Date */}
+        <DateTimeInput label="Starting Date" value={startDate} onChange={setStartDate} mode="date" />
 
         {/* Active Days */}
         <SectionLabel label="Active Days" />

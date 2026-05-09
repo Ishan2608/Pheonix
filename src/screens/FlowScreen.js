@@ -55,21 +55,29 @@ export default function FlowScreen() {
       </View>
 
       {/* ── Tag Filter Bar ── */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[styles.tagBar, { borderBottomColor: colors.border }]}
-      >
-        <TagPill label="All" selected={!selectedTag} onPress={() => setSelectedTag(null)} />
-        {tags.map((tag) => (
-          <TagPill
-            key={tag}
-            label={tag}
-            selected={selectedTag === tag}
-            onPress={() => setSelectedTag(selectedTag === tag ? null : tag)}
-          />
-        ))}
-      </ScrollView>
+      <View style={[styles.tagBarWrapper, { borderBottomColor: colors.border }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tagBarContent}
+        >
+          <TagPill label="All" selected={!selectedTag} onPress={() => setSelectedTag(null)} />
+          {tags.map((tag) => (
+            <TagPill
+              key={tag}
+              label={tag}
+              selected={selectedTag === tag}
+              onPress={() => setSelectedTag(selectedTag === tag ? null : tag)}
+            />
+          ))}
+        </ScrollView>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Settings')}
+          style={[styles.tagSettingsBtn, { borderLeftColor: colors.border }]}
+        >
+          <Feather name="sliders" size={16} color={colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
 
       {/* ── Habit List ── */}
       {filtered.length === 0 ? (
@@ -117,6 +125,8 @@ const styles = StyleSheet.create({
   header:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: 1 },
   headerIcons: { flexDirection: 'row', gap: 4 },
   iconBtn:     { padding: 8 },
-  tagBar:      { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
+  tagBarWrapper:   { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, height: 52 },
+  tagBarContent:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
+  tagSettingsBtn:  { paddingHorizontal: 14, height: '100%', alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1 },
   fab:         { position: 'absolute', bottom: 24, right: 24, width: 52, height: 52, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#6366f1', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
 });
