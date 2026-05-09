@@ -28,7 +28,7 @@ export default function CreateTaskScreen() {
   const [date, setDate]             = useState(existing?.date ? new Date(existing.date) : new Date());
   const [time, setTime]             = useState(existing?.time ? new Date(`1970-01-01T${existing.time}`) : new Date());
   const [showTime, setShowTime]     = useState(!!existing?.time);
-  const [groupId, setGroupId]       = useState(existing?.groupId || null);
+  const [groupId, setGroupId] = useState(existing?.groupId || route.params?.defaultGroup || null);
   const [linkedGoals, setLinkedGoals] = useState(
     goals.filter((g) => g.taskIds?.includes(editingId)).map((g) => g.id)
   );

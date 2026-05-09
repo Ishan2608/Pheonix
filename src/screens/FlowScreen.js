@@ -19,7 +19,7 @@ export default function FlowScreen() {
   const navigation = useNavigation();
 
   const { getOrderedHabits, logs, logHabit, deleteHabit } = useHabitStore();
-  const { tags } = useTagStore();
+  const { tags = [] } = useTagStore();
   const toggleTheme = useThemeStore((s) => s.toggle);
 
   const [selectedTag, setSelectedTag] = useState(null);
@@ -39,7 +39,7 @@ export default function FlowScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <View>
           <AppText variant="caption">{formatDisplayDate()}</AppText>
-          <AppText variant="heading">{getGreeting()} 👋</AppText>
+          <AppText variant="heading">{getGreeting()}</AppText>
         </View>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={() => setViewMode(v => v === 'simple' ? 'heatmap' : 'simple')} style={styles.iconBtn}>
@@ -71,12 +71,6 @@ export default function FlowScreen() {
             />
           ))}
         </ScrollView>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Settings')}
-          style={[styles.tagSettingsBtn, { borderLeftColor: colors.border }]}
-        >
-          <Feather name="sliders" size={16} color={colors.textSecondary} />
-        </TouchableOpacity>
       </View>
 
       {/* ── Habit List ── */}

@@ -37,6 +37,13 @@ export default function CreateHabitScreen() {
   const [type, setType] = useState(existing?.type || 'action');
   const [goal, setGoal] = useState(String(existing?.goal || ''));
   const [unit, setUnit] = useState(existing?.unit || '');
+  const [reminders, setReminders] = useState(
+    existing?.reminders?.map((r) => new Date(`1970-01-01T${r}`)) || []
+  );
+
+  const addReminder = () => setReminders((prev) => [...prev, new Date()]);
+  const removeReminder = (i) => setReminders((prev) => prev.filter((_, idx) => idx !== i));
+  const updateReminder = (i, date) => setReminders((prev) => prev.map((r, idx) => idx === i ? date : r));
 
   const toggleDay = (day) =>
     setActiveDays((prev) => prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]);
@@ -63,7 +70,9 @@ export default function CreateHabitScreen() {
       type,
       goal: type === 'progress' ? parseFloat(goal) || 1 : undefined,
       unit: type === 'progress' ? unit.trim() : undefined,
-      reminders: existing?.reminders || [],
+      reminders: reminders.map((r) =>
+        r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+      ),
     };
     existing ? updateHabit(editingId, data) : addHabit(data);
     navigation.goBack();
@@ -134,7 +143,6 @@ export default function CreateHabitScreen() {
             );
           })}
         </View>
-
         {/* Type */}
         <SectionLabel label="Type" />
         <View style={styles.segmentRow}>
@@ -162,6 +170,23 @@ export default function CreateHabitScreen() {
           </View>
         )}
 
+        {/* Reminders */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 8 }}>
+          <AppText variant="label">Reminders</AppText>
+          <TouchableOpacity onPress={addReminder} style={[styles.chip, { borderColor: colors.accent, borderRadius: radius.full }]}>
+            <AppText variant="label" color={colors.accent}>+ Add</AppText>
+          </TouchableOpacity>
+        </View>
+        {reminders.length === 0 && <AppText variant="caption">No reminders set.</AppText>}
+        {reminders.map((r, i) => (
+          <View key={i} style={[styles.reminderRow, { borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surfaceRaised }]}>
+            <DateTimeInput value={r} onChange={(d) => updateReminder(i, d)} mode="time" />
+            <TouchableOpacity onPress={() => removeReminder(i)} style={{ padding: 10 }} hitSlop={8}>
+              <Feather name="x" size={16} color={colors.danger} />
+            </TouchableOpacity>
+          </View>
+        ))}
+
         <AppButton label={existing ? 'Save Changes' : 'Create Habit'} onPress={handleSave} style={{ marginTop: 32 }} />
         {existing && <AppButton label="Cancel" onPress={() => navigation.goBack()} variant="ghost" style={{ marginTop: 8 }} />}
       </ScrollView>
@@ -178,8 +203,9 @@ const styles = StyleSheet.create({
   newTagRow:   { flexDirection: 'row', gap: 8, marginTop: 10 },
   newTagInput: { flex: 1, height: 40, paddingHorizontal: 12, borderWidth: 1, fontSize: 13 },
   addTagBtn:   { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-  daysRow:     { flexDirection: 'row', gap: 6 },
+  reminderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, marginBottom: 8, paddingRight: 4 },
   dayBtn:      { flex: 1, paddingVertical: 10, alignItems: 'center', borderWidth: 1 },
+  daysRow:     { flexDirection: 'row', gap: 4 },
   segmentRow:  { flexDirection: 'row', gap: 10 },
   segment:     { flex: 1, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
 });

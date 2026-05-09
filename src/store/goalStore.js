@@ -6,7 +6,7 @@ export const useGoalStore = create((set, get) => ({
 
   init: async () => {
     const goals = await loadItem(KEYS.GOALS, []);
-    set({ goals });
+    set({ goals: goals || [] });
   },
 
   addGoal: (data) => {

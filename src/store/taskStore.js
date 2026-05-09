@@ -12,7 +12,7 @@ export const useTaskStore = create((set, get) => ({
       loadItem(KEYS.TASKS, []),
       loadItem(KEYS.TASK_GROUPS, DEFAULT_GROUPS),
     ]);
-    set({ tasks, taskGroups });
+    set({ tasks: tasks || [], taskGroups: taskGroups || DEFAULT_GROUPS });
   },
 
   // ─── Tasks ────────────────────────────────────────────────────────────────

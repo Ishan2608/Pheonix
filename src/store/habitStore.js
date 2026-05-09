@@ -13,7 +13,7 @@ export const useHabitStore = create((set, get) => ({
       loadItem(KEYS.LOGS, {}),
       loadItem(KEYS.HABIT_ORDER, []),
     ]);
-    set({ habits, logs, habitOrder });
+    set({ habits: habits || [], logs: logs || {}, habitOrder: habitOrder || [] });
   },
 
   // ─── Habits ───────────────────────────────────────────────────────────────

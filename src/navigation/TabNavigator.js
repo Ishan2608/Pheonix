@@ -1,91 +1,46 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
-
-// Screens
 import FlowScreen from '../screens/FlowScreen';
 import GoalsScreen from '../screens/GoalsScreen';
 import TasksScreen from '../screens/TasksScreen';
 
 const Tab = createBottomTabNavigator();
-
-function TabIcon({ name, label, focused, colors }) {
-  return (
-    <View style={[styles.tabItem, focused && { backgroundColor: colors.surfaceRaised }]}>
-      <Feather
-        name={name}
-        size={18}
-        color={focused ? colors.textPrimary : colors.textMuted}
-      />
-      <Text style={[styles.tabLabel, { color: focused ? colors.textPrimary : colors.textMuted }]}>
-        {label}
-      </Text>
-    </View>
-  );
-}
+const ICONS = { Flow: 'zap', Goals: 'target', Tasks: 'check-square' };
 
 export default function TabNavigator() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: colors.bg,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 72,
-          paddingBottom: 12,
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom + 6,
+          paddingTop: 8,
         },
-      }}
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '700',
+          letterSpacing: 0.5,
+        },
+        tabBarIcon: ({ color }) => (
+          <Feather name={ICONS[route.name]} size={20} color={color} />
+        ),
+      })}
     >
-      <Tab.Screen
-        name="Flow"
-        component={FlowScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="zap" label="FLOW" focused={focused} colors={colors} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Goals"
-        component={GoalsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="target" label="GOALS" focused={focused} colors={colors} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Tasks"
-        component={TasksScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="check-square" label="TASKS" focused={focused} colors={colors} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Flow"  component={FlowScreen}  />
+      <Tab.Screen name="Goals" component={GoalsScreen} />
+      <Tab.Screen name="Tasks" component={TasksScreen} />
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 12,
-    gap: 3,
-  },
-  tabLabel: {
-    fontSize: 8,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-});

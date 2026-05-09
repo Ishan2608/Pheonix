@@ -29,6 +29,12 @@ export default function CreateGoalScreen() {
   const [endDate, setEndDate] = useState(existing?.endDate ? new Date(existing.endDate) : null);
   const [showEndDate, setShowEndDate] = useState(!!existing?.endDate);
   const [linkedHabits, setLinkedHabits] = useState(existing?.habitIds || []);
+  const [reminders, setReminders] = useState(
+    existing?.reminders?.map((r) => new Date(`1970-01-01T${r}`)) || []
+  );
+  const addReminder = () => setReminders((prev) => [...prev, new Date()]);
+  const removeReminder = (i) => setReminders((prev) => prev.filter((_, idx) => idx !== i));
+  const updateReminder = (i, date) => setReminders((prev) => prev.map((r, idx) => idx === i ? date : r));
 
   const toggleHabit = (id) =>
     setLinkedHabits((prev) => prev.includes(id) ? prev.filter((h) => h !== id) : [...prev, id]);
@@ -42,6 +48,7 @@ export default function CreateGoalScreen() {
       endDate: showEndDate && endDate ? formatDate(endDate) : undefined,
       habitIds: linkedHabits,
       taskIds: existing?.taskIds || [],
+      reminders: reminders.map((r) => r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })),
     };
     existing ? updateGoal(editingId, data) : addGoal(data);
     navigation.goBack();
@@ -98,6 +105,23 @@ export default function CreateGoalScreen() {
           </View>
         )}
 
+        {/* Reminders */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 8 }}>
+          <AppText variant="label">Reminders</AppText>
+          <TouchableOpacity onPress={addReminder} style={[styles.chip, { borderColor: colors.accent, borderRadius: radius.full }]}>
+            <AppText variant="label" color={colors.accent}>+ Add</AppText>
+          </TouchableOpacity>
+        </View>
+        {reminders.length === 0 && <AppText variant="caption">No reminders set.</AppText>}
+        {reminders.map((r, i) => (
+          <View key={i} style={[styles.reminderRow, { borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surfaceRaised }]}>
+            <DateTimeInput value={r} onChange={(d) => updateReminder(i, d)} mode="time" />
+            <TouchableOpacity onPress={() => removeReminder(i)} style={{ padding: 10 }} hitSlop={8}>
+              <Feather name="x" size={16} color={colors.danger} />
+            </TouchableOpacity>
+          </View>
+        ))}
+
         <AppButton label={existing ? 'Save Changes' : 'Create Goal'} onPress={handleSave} style={{ marginTop: 32 }} />
         {existing && <AppButton label="Cancel" onPress={() => navigation.goBack()} variant="ghost" style={{ marginTop: 8 }} />}
       </ScrollView>
@@ -110,5 +134,5 @@ const styles = StyleSheet.create({
   iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   input:   { borderWidth: 1 },
   wrap:    { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip:    { paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1 },
+  reminderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, marginBottom: 8, paddingRight: 4 },
 });

@@ -8,7 +8,7 @@ export const useTagStore = create((set, get) => ({
 
   init: async () => {
     const tags = await loadItem(KEYS.TAGS, DEFAULT_TAGS);
-    set({ tags });
+    set({ tags: tags || DEFAULT_TAGS });
   },
 
   addTag: (label) => {
