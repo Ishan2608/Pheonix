@@ -134,5 +134,6 @@ const styles = StyleSheet.create({
   iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   input:   { borderWidth: 1 },
   wrap:    { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip:    { paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1 },
   reminderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, marginBottom: 8, paddingRight: 4 },
 });

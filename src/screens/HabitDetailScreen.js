@@ -7,6 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useHabitStore } from '../store/habitStore';
 import AppText from '../components/common/AppText';
 import MonthHeatmap from '../components/habits/MonthHeatmap';
+import ProgressChart from '../components/habits/ProgressChart';
 import { calculateStreak, calculateBestStreak, getCompletionRate } from '../utils/streakUtils';
 
 export default function HabitDetailScreen() {
@@ -80,9 +81,12 @@ export default function HabitDetailScreen() {
           ))}
         </View>
 
-        {/* Monthly heatmap */}
+        {/* Chart / Heatmap */}
         <View style={[styles.section, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.lg, marginTop: spacing.xl }]}>
-          <MonthHeatmap habit={habit} logs={habitLogs} />
+          {habit.type === 'progress'
+            ? <ProgressChart habit={habit} logs={habitLogs} />
+            : <MonthHeatmap habit={habit} logs={habitLogs} />
+          }
         </View>
 
         {/* Details */}
