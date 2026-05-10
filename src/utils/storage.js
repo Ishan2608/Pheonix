@@ -8,6 +8,7 @@ export const KEYS = {
   TAGS:        '@phoenix/tags',
   HABIT_ORDER: '@phoenix/habit_order',
   TASK_GROUPS: '@phoenix/task_groups',
+  GOAL_CATEGORIES: '@phoenix/goal_categories',
   THEME:       '@phoenix/theme',
 };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -7,38 +7,134 @@ import { useTheme } from '../hooks/useTheme';
 import { useThemeStore } from '../store/themeStore';
 import { useTagStore } from '../store/tagStore';
 import { useTaskStore } from '../store/taskStore';
-import { useHabitStore } from '../store/habitStore';
 import { useGoalStore } from '../store/goalStore';
 import AppText from '../components/common/AppText';
 import { saveItem, KEYS } from '../utils/storage';
+
+// ─── Reusable editable list section ─────────────────────────────────────────
+
+function EditableList({ items, onAdd, onRename, onDelete, deleteMessage, colors, radius }) {
+  const [newValue, setNewValue] = useState('');
+  const [renamingItem, setRenamingItem] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  const handleAdd = () => {
+    const trimmed = newValue.trim();
+    if (!trimmed) return;
+    onAdd(trimmed);
+    setNewValue('');
+  };
+
+  const handleRename = (item) => {
+    const trimmed = renameValue.trim();
+    if (!trimmed || trimmed === item) { setRenamingItem(null); return; }
+    onRename(item, trimmed);
+    setRenamingItem(null);
+    setRenameValue('');
+  };
+
+  return (
+    <View>
+      <View style={[styles.block, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.lg }]}>
+        {items.map((item, idx) => (
+          <View key={item} style={[styles.listItem, { borderBottomColor: colors.border, borderBottomWidth: idx < items.length - 1 ? 1 : 0 }]}>
+            {renamingItem === item ? (
+              <View style={styles.renameRow}>
+                <TextInput
+                  value={renameValue}
+                  onChangeText={setRenameValue}
+                  autoFocus
+                  style={[styles.renameInput, { color: colors.textPrimary, borderColor: colors.accent, backgroundColor: colors.bg, borderRadius: radius.sm }]}
+                  onSubmitEditing={() => handleRename(item)}
+                />
+                <TouchableOpacity onPress={() => handleRename(item)} hitSlop={8} style={styles.actionBtn}>
+                  <Feather name="check" size={16} color={colors.accent} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setRenamingItem(null)} hitSlop={8} style={styles.actionBtn}>
+                  <Feather name="x" size={16} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <AppText variant="body" color={colors.textPrimary} style={{ flex: 1 }}>{item}</AppText>
+                <TouchableOpacity
+                  onPress={() => { setRenamingItem(item); setRenameValue(item); }}
+                  hitSlop={8}
+                  style={styles.actionBtn}
+                >
+                  <Feather name="edit-2" size={14} color={colors.textMuted} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    Alert.alert(`Delete "${item}"?`, deleteMessage, [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Delete', style: 'destructive', onPress: () => onDelete(item) },
+                    ])
+                  }
+                  hitSlop={8}
+                  style={styles.actionBtn}
+                >
+                  <Feather name="trash-2" size={14} color={colors.danger} />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        ))}
+      </View>
+
+      {/* Add new */}
+      <View style={[styles.addRow, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.lg }]}>
+        <TextInput
+          value={newValue}
+          onChangeText={setNewValue}
+          placeholder="Add new..."
+          placeholderTextColor={colors.textMuted}
+          style={[styles.addInput, { color: colors.textPrimary }]}
+          onSubmitEditing={handleAdd}
+          returnKeyType="done"
+        />
+        <TouchableOpacity
+          onPress={handleAdd}
+          style={[styles.addBtn, { backgroundColor: colors.accent, borderRadius: radius.md }]}
+        >
+          <Feather name="plus" size={16} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+// ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function SettingsScreen() {
   const { colors, spacing, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { mode, toggle } = useThemeStore();
-  const { tags, addTag, deleteTag } = useTagStore();
-  const { taskGroups, addGroup, deleteGroup } = useTaskStore();
-  const [newTag, setNewTag] = useState('');
-  const [newGroup, setNewGroup] = useState('');
+  const { tags, addTag, renameTag, deleteTag } = useTagStore();
+  const { taskGroups, addGroup, renameGroup, deleteGroup } = useTaskStore();
+  const { goalCategories = [], addGoalCategory, renameGoalCategory, deleteGoalCategory } = useGoalStore();
 
   const handleClearAll = () => {
-    Alert.alert('Clear All Data', 'This will delete all habits, goals, tasks and logs. Cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete Everything',
-        style: 'destructive',
-        onPress: async () => {
-          await Promise.all(Object.values(KEYS).map((k) => saveItem(k, null)));
-          Alert.alert('Done', 'All data cleared. Restart the app.');
+    Alert.alert(
+      'Clear All Data',
+      'This will delete all habits, goals, tasks and logs. Cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Everything',
+          style: 'destructive',
+          onPress: async () => {
+            await Promise.all(Object.values(KEYS).map((k) => saveItem(k, null)));
+            Alert.alert('Done', 'All data cleared. Restart the app.');
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
-
       <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
           <Feather name="x" size={20} color={colors.textPrimary} />
@@ -47,8 +143,11 @@ export default function SettingsScreen() {
         <View style={styles.iconBtn} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: 60 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Theme */}
         <AppText variant="label" style={styles.sectionLabel}>Appearance</AppText>
         <TouchableOpacity
@@ -62,57 +161,43 @@ export default function SettingsScreen() {
           <AppText variant="label" color={colors.accent}>{mode === 'dark' ? 'Dark' : 'Light'}</AppText>
         </TouchableOpacity>
 
-        {/* Tags */}
+        {/* Habit Tags */}
         <AppText variant="label" style={styles.sectionLabel}>Habit Tags</AppText>
-        <View style={[styles.block, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.lg }]}>
-          {tags.map((tag) => (
-            <View key={tag} style={[styles.listItem, { borderBottomColor: colors.border }]}>
-              <AppText variant="body" color={colors.textPrimary}>{tag}</AppText>
-              <TouchableOpacity
-                onPress={() =>
-                  Alert.alert(
-                    `Delete tag "${tag}"?`,
-                    'Habits with this tag will keep their data but lose this tag.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Delete', style: 'destructive', onPress: () => deleteTag(tag) },
-                    ]
-                  )
-                }
-                hitSlop={8}
-              >
-                <Feather name="trash-2" size={14} color={colors.danger} />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+        <EditableList
+          items={tags}
+          onAdd={addTag}
+          onRename={renameTag}
+          onDelete={deleteTag}
+          deleteMessage="Habits with this tag will keep their data but lose this tag."
+          colors={colors}
+          radius={radius}
+        />
 
-        {/* Task Groups */}
-        <AppText variant="label" style={styles.sectionLabel}>Task Groups</AppText>
-        <View style={[styles.block, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.lg }]}>
-          {taskGroups.map((g) => (
-            <View key={g} style={[styles.listItem, { borderBottomColor: colors.border }]}>
-              <AppText variant="body" color={colors.textPrimary}>{g}</AppText>
-              <TouchableOpacity
-                onPress={() =>
-                  Alert.alert(
-                    `Delete list "${g}"?`,
-                    'All tasks inside this list will be permanently deleted.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Delete', style: 'destructive', onPress: () => deleteGroup(g) },
-                    ]
-                  )
-                }
-                hitSlop={8}
-              >
-                <Feather name="trash-2" size={14} color={colors.danger} />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+        {/* Goal Categories */}
+        <AppText variant="label" style={styles.sectionLabel}>Goal Categories</AppText>
+        <EditableList
+          items={goalCategories}
+          onAdd={addGoalCategory}
+          onRename={renameGoalCategory}
+          onDelete={deleteGoalCategory}
+          deleteMessage="Goals in this category will keep their data but lose this category."
+          colors={colors}
+          radius={radius}
+        />
 
-        {/* Danger zone */}
+        {/* Task Lists */}
+        <AppText variant="label" style={styles.sectionLabel}>Task Lists</AppText>
+        <EditableList
+          items={taskGroups}
+          onAdd={addGroup}
+          onRename={renameGroup}
+          onDelete={deleteGroup}
+          deleteMessage="All tasks inside this list will be permanently deleted."
+          colors={colors}
+          radius={radius}
+        />
+
+        {/* Danger Zone */}
         <AppText variant="label" style={[styles.sectionLabel, { color: colors.danger }]}>Danger Zone</AppText>
         <TouchableOpacity
           onPress={handleClearAll}
@@ -124,7 +209,6 @@ export default function SettingsScreen() {
           </View>
           <Feather name="chevron-right" size={16} color={colors.danger} />
         </TouchableOpacity>
-
       </ScrollView>
     </View>
   );
@@ -137,6 +221,12 @@ const styles = StyleSheet.create({
   sectionLabel: { marginTop: 24, marginBottom: 8 },
   row:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14, borderWidth: 1 },
   rowLeft:      { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  block:        { borderWidth: 1, overflow: 'hidden' },
-  listItem:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1 },
+  block:        { borderWidth: 1, overflow: 'hidden', marginBottom: 8 },
+  listItem:     { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 },
+  renameRow:    { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  renameInput:  { flex: 1, height: 36, paddingHorizontal: 10, borderWidth: 1.5, fontSize: 14 },
+  actionBtn:    { paddingHorizontal: 6 },
+  addRow:       { flexDirection: 'row', alignItems: 'center', borderWidth: 1, paddingHorizontal: 12, paddingVertical: 6, gap: 8 },
+  addInput:     { flex: 1, height: 36, fontSize: 14 },
+  addBtn:       { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
 });

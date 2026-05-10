@@ -1,13 +1,56 @@
 import { create } from 'zustand';
 import { saveItem, loadItem, KEYS, generateId } from '../utils/storage';
 
+const DEFAULT_GOAL_CATEGORIES = ['Fitness'];
+
 export const useGoalStore = create((set, get) => ({
   goals: [],
+  goalCategories: [],
 
   init: async () => {
-    const goals = await loadItem(KEYS.GOALS, []);
-    set({ goals: goals || [] });
+    const [goals, goalCategories] = await Promise.all([
+      loadItem(KEYS.GOALS, []),
+      loadItem(KEYS.GOAL_CATEGORIES, DEFAULT_GOAL_CATEGORIES),
+    ]);
+    set({ goals: goals || [], goalCategories: goalCategories || DEFAULT_GOAL_CATEGORIES });
   },
+
+  // ─── Categories ───────────────────────────────────────────────────────────
+
+  addGoalCategory: (name) => {
+    const { goalCategories } = get();
+    const trimmed = name.trim();
+    if (!trimmed || goalCategories.includes(trimmed)) return;
+    const next = [...goalCategories, trimmed];
+    set({ goalCategories: next });
+    saveItem(KEYS.GOAL_CATEGORIES, next);
+  },
+
+  deleteGoalCategory: (name) => {
+    const { goalCategories, goals } = get();
+    const nextCategories = goalCategories.filter((c) => c !== name);
+    const nextGoals = goals.map((g) =>
+      g.category === name ? { ...g, category: undefined } : g
+    );
+    set({ goalCategories: nextCategories, goals: nextGoals });
+    saveItem(KEYS.GOAL_CATEGORIES, nextCategories);
+    saveItem(KEYS.GOALS, nextGoals);
+  },
+
+  renameGoalCategory: (oldName, newName) => {
+    const { goalCategories, goals } = get();
+    const trimmed = newName.trim();
+    if (!trimmed || goalCategories.includes(trimmed)) return;
+    const nextCategories = goalCategories.map((c) => (c === oldName ? trimmed : c));
+    const nextGoals = goals.map((g) =>
+      g.category === oldName ? { ...g, category: trimmed } : g
+    );
+    set({ goalCategories: nextCategories, goals: nextGoals });
+    saveItem(KEYS.GOAL_CATEGORIES, nextCategories);
+    saveItem(KEYS.GOALS, nextGoals);
+  },
+
+  // ─── Goals ────────────────────────────────────────────────────────────────
 
   addGoal: (data) => {
     const { goals } = get();

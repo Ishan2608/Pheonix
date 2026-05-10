@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { saveItem, loadItem, KEYS, generateId } from '../utils/storage';
 
-const DEFAULT_GROUPS = ['Personal', 'Work', 'Urgent'];
+const DEFAULT_GROUPS = ['Personal'];
 
 export const useTaskStore = create((set, get) => ({
   tasks: [],

@@ -16,39 +16,44 @@ export default function CreateGoalScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
-  const { goals, addGoal, updateGoal } = useGoalStore();
+  const { goals, goalCategories = [], addGoal, updateGoal } = useGoalStore();
   const { getOrderedHabits } = useHabitStore();
 
   const editingId = route.params?.goalId;
   const existing = editingId ? goals.find((g) => g.id === editingId) : null;
   const habits = getOrderedHabits();
 
-  const [title, setTitle] = useState(existing?.title || '');
+  const [title, setTitle]           = useState(existing?.title || '');
   const [description, setDescription] = useState(existing?.description || '');
-  const [startDate, setStartDate] = useState(existing?.startDate ? new Date(existing.startDate) : new Date());
-  const [endDate, setEndDate] = useState(existing?.endDate ? new Date(existing.endDate) : null);
+  const [category, setCategory]     = useState(existing?.category || null);
+  const [startDate, setStartDate]   = useState(existing?.startDate ? new Date(existing.startDate) : new Date());
+  const [endDate, setEndDate]       = useState(existing?.endDate ? new Date(existing.endDate) : null);
   const [showEndDate, setShowEndDate] = useState(!!existing?.endDate);
   const [linkedHabits, setLinkedHabits] = useState(existing?.habitIds || []);
-  const [reminders, setReminders] = useState(
+  const [reminders, setReminders]   = useState(
     existing?.reminders?.map((r) => new Date(`1970-01-01T${r}`)) || []
   );
-  const addReminder = () => setReminders((prev) => [...prev, new Date()]);
-  const removeReminder = (i) => setReminders((prev) => prev.filter((_, idx) => idx !== i));
-  const updateReminder = (i, date) => setReminders((prev) => prev.map((r, idx) => idx === i ? date : r));
 
   const toggleHabit = (id) =>
     setLinkedHabits((prev) => prev.includes(id) ? prev.filter((h) => h !== id) : [...prev, id]);
+
+  const addReminder = () => setReminders((prev) => [...prev, new Date()]);
+  const removeReminder = (i) => setReminders((prev) => prev.filter((_, idx) => idx !== i));
+  const updateReminder = (i, date) => setReminders((prev) => prev.map((r, idx) => idx === i ? date : r));
 
   const handleSave = () => {
     if (!title.trim()) { Alert.alert('Title required'); return; }
     const data = {
       title: title.trim(),
       description: description.trim(),
+      category,
       startDate: formatDate(startDate),
       endDate: showEndDate && endDate ? formatDate(endDate) : undefined,
       habitIds: linkedHabits,
       taskIds: existing?.taskIds || [],
-      reminders: reminders.map((r) => r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })),
+      reminders: reminders.map((r) =>
+        r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+      ),
     };
     existing ? updateGoal(editingId, data) : addGoal(data);
     navigation.goBack();
@@ -77,6 +82,28 @@ export default function CreateGoalScreen() {
         <SectionLabel label="Description" />
         <TextInput value={description} onChangeText={setDescription} placeholder="Optional..." placeholderTextColor={colors.textMuted} multiline style={[inputStyle, { height: 80, paddingHorizontal: 14, paddingTop: 12, textAlignVertical: 'top' }]} />
 
+        {/* Category */}
+        <SectionLabel label="Category" />
+        {goalCategories.length === 0
+          ? <AppText variant="caption">No categories yet. Add them in Settings.</AppText>
+          : (
+            <View style={styles.wrap}>
+              {goalCategories.map((cat) => {
+                const sel = category === cat;
+                return (
+                  <TouchableOpacity
+                    key={cat}
+                    onPress={() => setCategory(sel ? null : cat)}
+                    style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surfaceRaised, borderColor: sel ? colors.accent : colors.border, borderRadius: radius.full }]}
+                  >
+                    <AppText variant="label" color={sel ? '#fff' : colors.textSecondary}>{cat}</AppText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )
+        }
+
         <DateTimeInput label="Start Date" value={startDate} onChange={setStartDate} mode="date" />
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 8 }}>
@@ -85,25 +112,29 @@ export default function CreateGoalScreen() {
             <AppText variant="label" color={colors.accent}>{showEndDate ? 'Remove' : '+ Add'}</AppText>
           </TouchableOpacity>
         </View>
-        {showEndDate && (
-          <DateTimeInput value={endDate || new Date()} onChange={setEndDate} mode="date" />
-        )}
+        {showEndDate && <DateTimeInput value={endDate || new Date()} onChange={setEndDate} mode="date" />}
 
+        {/* Link Habits */}
         <SectionLabel label="Link Habits" />
-        {habits.length === 0 ? (
-          <AppText variant="caption">No habits created yet.</AppText>
-        ) : (
-          <View style={styles.wrap}>
-            {habits.map((h) => {
-              const sel = linkedHabits.includes(h.id);
-              return (
-                <TouchableOpacity key={h.id} onPress={() => toggleHabit(h.id)} style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surfaceRaised, borderColor: sel ? colors.accent : colors.border, borderRadius: radius.md }]}>
-                  <AppText variant="label" color={sel ? '#fff' : colors.textSecondary}>{h.title}</AppText>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
+        {habits.length === 0
+          ? <AppText variant="caption">No habits created yet.</AppText>
+          : (
+            <View style={styles.wrap}>
+              {habits.map((h) => {
+                const sel = linkedHabits.includes(h.id);
+                return (
+                  <TouchableOpacity
+                    key={h.id}
+                    onPress={() => toggleHabit(h.id)}
+                    style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surfaceRaised, borderColor: sel ? colors.accent : colors.border, borderRadius: radius.md }]}
+                  >
+                    <AppText variant="label" color={sel ? '#fff' : colors.textSecondary}>{h.title}</AppText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )
+        }
 
         {/* Reminders */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 8 }}>
@@ -130,10 +161,10 @@ export default function CreateGoalScreen() {
 }
 
 const styles = StyleSheet.create({
-  header:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
-  iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  input:   { borderWidth: 1 },
-  wrap:    { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip:    { paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1 },
-  reminderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, marginBottom: 8, paddingRight: 4 },
+  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
+  iconBtn:      { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  input:        { borderWidth: 1 },
+  wrap:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip:         { paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1 },
+  reminderRow:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, marginBottom: 8, paddingRight: 4 },
 });
