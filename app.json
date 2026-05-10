@@ -13,14 +13,16 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Pheonix"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.Pheonix"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,6 +30,11 @@
     "plugins": [
       "expo-font",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a4693930-e65f-4695-b85f-1cfa92bf29ab"
+      }
+    }
   }
 }
