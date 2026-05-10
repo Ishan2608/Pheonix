@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -101,7 +101,12 @@ export default function HabitDetailScreen() {
 
         {/* Delete */}
         <TouchableOpacity
-          onPress={() => { deleteHabit(habit.id); navigation.goBack(); }}
+          onPress={() =>
+            Alert.alert('Delete Habit', `Delete "${habit.title}"? All logs and streak data will be lost.`, [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: () => { deleteHabit(habit.id); navigation.goBack(); } },
+            ])
+          }
           style={[styles.deleteBtn, { borderColor: colors.danger, borderRadius: radius.md }]}
         >
           <Feather name="trash-2" size={14} color={colors.danger} />

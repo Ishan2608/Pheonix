@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { saveItem, loadItem, KEYS, generateId } from '../utils/storage';
+import { useHabitStore } from './habitStore';
 
 const DEFAULT_TAGS = ['Fitness', 'Mental', 'Productivity', 'Social', 'Health'];
 
@@ -31,8 +32,17 @@ export const useTagStore = create((set, get) => ({
 
   deleteTag: (label) => {
     const { tags } = get();
-    const next = tags.filter((t) => t !== label);
-    set({ tags: next });
-    saveItem(KEYS.TAGS, next);
+    const nextTags = tags.filter((t) => t !== label);
+    set({ tags: nextTags });
+    saveItem(KEYS.TAGS, nextTags);
+
+    // Remove this tag from all habits that reference it
+    const { habits } = useHabitStore.getState();
+    const nextHabits = habits.map((h) =>
+      h.tags?.includes(label)
+        ? { ...h, tags: h.tags.filter((t) => t !== label) }
+        : h
+    );
+    useHabitStore.getState().setHabits(nextHabits);
   },
 }));

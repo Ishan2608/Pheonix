@@ -68,7 +68,19 @@ export default function SettingsScreen() {
           {tags.map((tag) => (
             <View key={tag} style={[styles.listItem, { borderBottomColor: colors.border }]}>
               <AppText variant="body" color={colors.textPrimary}>{tag}</AppText>
-              <TouchableOpacity onPress={() => deleteTag(tag)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() =>
+                  Alert.alert(
+                    `Delete tag "${tag}"?`,
+                    'Habits with this tag will keep their data but lose this tag.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Delete', style: 'destructive', onPress: () => deleteTag(tag) },
+                    ]
+                  )
+                }
+                hitSlop={8}
+              >
                 <Feather name="trash-2" size={14} color={colors.danger} />
               </TouchableOpacity>
             </View>
@@ -81,7 +93,19 @@ export default function SettingsScreen() {
           {taskGroups.map((g) => (
             <View key={g} style={[styles.listItem, { borderBottomColor: colors.border }]}>
               <AppText variant="body" color={colors.textPrimary}>{g}</AppText>
-              <TouchableOpacity onPress={() => deleteGroup(g)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() =>
+                  Alert.alert(
+                    `Delete list "${g}"?`,
+                    'All tasks inside this list will be permanently deleted.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Delete', style: 'destructive', onPress: () => deleteGroup(g) },
+                    ]
+                  )
+                }
+                hitSlop={8}
+              >
                 <Feather name="trash-2" size={14} color={colors.danger} />
               </TouchableOpacity>
             </View>

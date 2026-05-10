@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -86,7 +86,12 @@ export default function GoalDetailScreen() {
 
         {/* Delete */}
         <TouchableOpacity
-          onPress={() => { deleteGoal(goal.id); navigation.goBack(); }}
+          onPress={() =>
+            Alert.alert('Delete Goal', `Delete "${goal.title}"? Linked habits and tasks will not be deleted, only unlinked.`, [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: () => { deleteGoal(goal.id); navigation.goBack(); } },
+            ])
+          }
           style={[styles.deleteBtn, { borderColor: colors.danger, borderRadius: radius.md }]}
         >
           <Feather name="trash-2" size={14} color={colors.danger} />

@@ -18,6 +18,11 @@ export const useHabitStore = create((set, get) => ({
 
   // ─── Habits ───────────────────────────────────────────────────────────────
 
+  setHabits: (habits) => {
+    set({ habits });
+    saveItem(KEYS.HABITS, habits);
+  },
+
   addHabit: (data) => {
     const { habits, habitOrder } = get();
     const newHabit = { ...data, id: generateId(), createdAt: Date.now() };

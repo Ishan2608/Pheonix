@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, ScrollView, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
@@ -72,7 +72,12 @@ export default function FlowScreen() {
               onLog={logHabit}
               onPress={() => navigation.navigate('HabitDetail', { habitId: item.id })}
               onEdit={() => navigation.navigate('CreateHabit', { habitId: item.id })}
-              onDelete={() => deleteHabit(item.id)}
+              onDelete={() =>
+                Alert.alert('Delete Habit', `Delete "${item.title}"? This will also remove all its logs.`, [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Delete', style: 'destructive', onPress: () => deleteHabit(item.id) },
+                ])
+              }
             />
           )}
         />

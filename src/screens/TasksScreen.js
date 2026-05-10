@@ -159,7 +159,12 @@ export default function TasksScreen() {
               radius={radius}
               spacing={spacing}
               onToggle={() => toggleTask(item.id)}
-              onDelete={() => deleteTask(item.id)}
+              onDelete={() =>
+                Alert.alert('Delete Task', `Delete "${item.title}"?`, [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Delete', style: 'destructive', onPress: () => deleteTask(item.id) },
+                ])
+              }
               onPress={() => navigation.navigate('CreateTask', { taskId: item.id })}
             />
           )}
