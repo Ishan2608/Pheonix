@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
@@ -8,10 +7,10 @@ import { useGoalStore } from '../store/goalStore';
 import { useHabitStore } from '../store/habitStore';
 import AppText from '../components/common/AppText';
 import EmptyState from '../components/common/EmptyState';
+import HomeHeader from '../components/common/HomeHeader';
 
 export default function GoalsScreen() {
   const { colors, spacing, radius } = useTheme();
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { goals } = useGoalStore();
   const { logs } = useHabitStore();
@@ -19,8 +18,9 @@ export default function GoalsScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
 
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <AppText variant="heading">Goals</AppText>
+      <HomeHeader />
+      <View style={[styles.listHeader, { borderBottomColor: colors.border }]}>
+        <AppText variant="title">Goals</AppText>
         <TouchableOpacity onPress={() => navigation.navigate('CreateGoal')} style={styles.iconBtn}>
           <Feather name="plus" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -79,7 +79,7 @@ function GoalCard({ goal, colors, radius, spacing, onPress }) {
 
 const styles = StyleSheet.create({
   screen:     { flex: 1 },
-  header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: 1 },
+  listHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1 },
   iconBtn:    { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   card:       { padding: 16, marginBottom: 12, borderWidth: 1 },
   cardTop:    { flexDirection: 'row', alignItems: 'center', gap: 8 },

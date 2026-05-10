@@ -3,17 +3,16 @@ import {
   View, FlatList, TouchableOpacity, TextInput,
   StyleSheet, Alert, ScrollView, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useTaskStore } from '../store/taskStore';
 import AppText from '../components/common/AppText';
 import EmptyState from '../components/common/EmptyState';
+import HomeHeader from '../components/common/HomeHeader';
 
 export default function TasksScreen() {
   const { colors, spacing, radius } = useTheme();
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { tasks = [], taskGroups = [], toggleTask, deleteTask, addGroup, renameGroup, deleteGroup } = useTaskStore();
 
@@ -75,17 +74,12 @@ export default function TasksScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
 
-      {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
-        <View style={{ flex: 1 }}>
-          <AppText variant="caption">Tasks</AppText>
-          <AppText variant="heading">{activeGroup || 'No List'}</AppText>
-        </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={() => setShowManageModal(true)} style={styles.iconBtn}>
-            <Feather name="more-vertical" size={20} color={colors.textPrimary} />
-          </TouchableOpacity>
-        </View>
+      <HomeHeader />
+      <View style={[styles.listHeader, { borderBottomColor: colors.border }]}>
+        <AppText variant="title">{activeGroup || 'Tasks'}</AppText>
+        <TouchableOpacity onPress={() => setShowManageModal(true)} style={styles.iconBtn}>
+          <Feather name="more-vertical" size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
       </View>
 
       {/* ── Group Tabs ── */}
@@ -309,8 +303,7 @@ function TaskItem({ task, colors, radius, onToggle, onDelete, onPress }) {
 
 const styles = StyleSheet.create({
   screen:          { flex: 1 },
-  header:          { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1 },
-  headerActions:   { flexDirection: 'row', gap: 4 },
+  listHeader:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 10, borderBottomWidth: 1 },
   iconBtn:         { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
 
   groupTabBar:     { borderBottomWidth: 1 },
