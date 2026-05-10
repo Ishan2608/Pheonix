@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { saveItem, loadItem, KEYS, generateId } from '../utils/storage';
 
-const DEFAULT_GOAL_CATEGORIES = ['Fitness'];
+const DEFAULT_GOAL_CATEGORIES = ['Fitness', 'Career'];
 
 export const useGoalStore = create((set, get) => ({
   goals: [],

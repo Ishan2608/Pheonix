@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { saveItem, loadItem, KEYS, generateId } from '../utils/storage';
 import { useHabitStore } from './habitStore';
 
-const DEFAULT_TAGS = ['Default'];
+const DEFAULT_TAGS = ['Personal', 'Work'];
 
 export const useTagStore = create((set, get) => ({
   tags: [],
