@@ -9,7 +9,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { useHabitStore } from '../store/habitStore';
 import { useTagStore } from '../store/tagStore';
-import { useGoalStore } from '../store/goalStore';
 import AppText from '../components/common/AppText';
 import AppButton from '../components/common/AppButton';
 import DateTimeInput from '../components/common/DateTimeInput';
@@ -25,7 +24,6 @@ export default function CreateHabitScreen() {
   const route = useRoute();
   const { habits, addHabit, updateHabit } = useHabitStore();
   const { tags, addTag } = useTagStore();
-  const { goals = [], toggleHabitInGoal } = useGoalStore();
 
   const editingId = route.params?.habitId;
   const existing = editingId ? habits.find((h) => h.id === editingId) : null;
@@ -39,12 +37,6 @@ export default function CreateHabitScreen() {
   const [type, setType] = useState(existing?.type || 'action');
   const [goal, setGoal] = useState(String(existing?.goal || ''));
   const [unit, setUnit] = useState(existing?.unit || '');
-  const [linkedGoals, setLinkedGoals] = useState(
-    goals.filter((g) => g.habitIds?.includes(editingId)).map((g) => g.id)
-  );
-
-  const toggleLinkedGoal = (id) =>
-    setLinkedGoals((prev) => prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]);
   const [reminders, setReminders] = useState(
     existing?.reminders?.map((r) => new Date(`1970-01-01T${r}`)) || []
   );
@@ -82,20 +74,11 @@ export default function CreateHabitScreen() {
         r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
       ),
     };
-    let savedId = editingId;
     if (existing) {
       updateHabit(editingId, data);
     } else {
-      const newHabit = { ...data, id: require('../utils/storage').generateId(), createdAt: Date.now() };
-      savedId = newHabit.id;
       addHabit(data);
     }
-    // Sync goal links
-    goals.forEach((g) => {
-      const wasLinked = g.habitIds?.includes(savedId);
-      const shouldLink = linkedGoals.includes(g.id);
-      if (wasLinked !== shouldLink) toggleHabitInGoal(g.id, savedId);
-    });
     navigation.goBack();
   };
 
@@ -190,28 +173,6 @@ export default function CreateHabitScreen() {
             </View>
           </View>
         )}
-
-        {/* Link to Goals */}
-        <SectionLabel label="Link to Goals" />
-        {goals.length === 0
-          ? <AppText variant="caption">No goals created yet.</AppText>
-          : (
-            <View style={styles.wrap}>
-              {goals.map((g) => {
-                const sel = linkedGoals.includes(g.id);
-                return (
-                  <TouchableOpacity
-                    key={g.id}
-                    onPress={() => toggleLinkedGoal(g.id)}
-                    style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surfaceRaised, borderColor: sel ? colors.accent : colors.border, borderRadius: radius.md }]}
-                  >
-                    <AppText variant="label" color={sel ? '#fff' : colors.textSecondary}>{g.title}</AppText>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )
-        }
 
         {/* Reminders */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 8 }}>

@@ -39,7 +39,7 @@ export default function GoalsScreen() {
       </HomeHeader>
 
       <View style={[styles.listHeader, { borderBottomColor: colors.border }]}>
-        <AppText variant="title">Goals</AppText>
+        <AppText variant="title">Ambitions</AppText>
         <TouchableOpacity onPress={() => navigation.navigate('CreateGoal')} style={styles.iconBtn}>
           <Feather name="plus" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -48,9 +48,9 @@ export default function GoalsScreen() {
       {filtered.length === 0 ? (
         <EmptyState
           icon="target"
-          title="No goals yet"
-          subtitle={selectedCategory ? `No goals in "${selectedCategory}".` : 'Create a goal to start tracking.'}
-          actionLabel={!selectedCategory ? 'Create Goal' : undefined}
+          title="No ambitions yet"
+          subtitle={selectedCategory ? `No ambitions in "${selectedCategory}".` : 'Create an ambitions to start tracking.'}
+          actionLabel={!selectedCategory ? 'Create Ambition' : undefined}
           onAction={() => navigation.navigate('CreateGoal')}
         />
       ) : (

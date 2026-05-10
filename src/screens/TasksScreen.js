@@ -10,6 +10,8 @@ import { useTaskStore } from '../store/taskStore';
 import AppText from '../components/common/AppText';
 import EmptyState from '../components/common/EmptyState';
 import HomeHeader from '../components/common/HomeHeader';
+import DateFilterBar from '../components/common/DateFilterBar';
+import { formatDate } from '../utils/dateUtils';
 
 export default function TasksScreen() {
   const { colors, spacing, radius } = useTheme();
@@ -17,14 +19,17 @@ export default function TasksScreen() {
   const { tasks = [], taskGroups = [], toggleTask, deleteTask, addGroup, renameGroup, deleteGroup } = useTaskStore();
 
   const [activeGroup, setActiveGroup] = useState(taskGroups[0] || null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [renamingGroup, setRenamingGroup] = useState(null);
   const [renameValue, setRenameValue] = useState('');
 
+  const selectedDateStr = formatDate(selectedDate);
+
   const groupTasks = tasks
-    .filter((t) => t.groupId === activeGroup)
+    .filter((t) => t.groupId === activeGroup && (!t.date || t.date === selectedDateStr))
     .sort((a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
       if (a.date && b.date) return a.date.localeCompare(b.date);
@@ -74,7 +79,11 @@ export default function TasksScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
 
-      <HomeHeader />
+      <HomeHeader>
+        <View style={[styles.dateBar, { borderBottomColor: colors.border }]}>
+          <DateFilterBar selectedDate={selectedDate} onSelect={setSelectedDate} />
+        </View>
+      </HomeHeader>
       <View style={[styles.listHeader, { borderBottomColor: colors.border }]}>
         <AppText variant="title">{activeGroup || 'Tasks'}</AppText>
         <TouchableOpacity onPress={() => setShowManageModal(true)} style={styles.iconBtn}>
@@ -293,7 +302,7 @@ function TaskItem({ task, colors, radius, onToggle, onDelete, onPress }) {
               <AppText variant="caption">{task.date}{task.time ? ` · ${task.time}` : ''}</AppText>
             ) : null}
             {task.description ? (
-              <AppText variant="caption" numberOfLines={1}>{task.description}</AppText>
+              <AppText variant="caption" numberOfLines={2} style={{ flexShrink: 1 }}>{task.description}</AppText>
             ) : null}
           </View>
         ) : null}
@@ -308,6 +317,7 @@ function TaskItem({ task, colors, radius, onToggle, onDelete, onPress }) {
 
 const styles = StyleSheet.create({
   screen:          { flex: 1 },
+  dateBar:         { borderBottomWidth: 1 },
   listHeader:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 10, borderBottomWidth: 1 },
   iconBtn:         { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
 
@@ -320,7 +330,7 @@ const styles = StyleSheet.create({
   item:            { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1 },
   checkWrap:       { marginRight: 14 },
   check:           { width: 22, height: 22, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  itemContent:     { flex: 1 },
+  itemContent:     { flex: 1, overflow: 'hidden' },
   itemMeta:        { flexDirection: 'row', gap: 8, marginTop: 3 },
 
   completedHeader: { paddingHorizontal: 20, paddingVertical: 10, borderTopWidth: 1, marginTop: 8 },

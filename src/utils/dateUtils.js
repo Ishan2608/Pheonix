@@ -52,12 +52,37 @@ export function formatDisplayDate(date = new Date()) {
   });
 }
 
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
 /**
- * "Good morning" / "Good afternoon" / "Good evening"
+ * Returns DAY_KEY string ('mon','tue',...) for a given Date object
  */
+export function getDayKey(date) {
+  return DAY_KEYS[date.getDay()];
+}
+
+/**
+ * Returns array of Date objects for N days starting from offset days ago
+ */
+export function getDateRange(daysBefore = 3, daysAfter = 10) {
+  const dates = [];
+  for (let i = -daysBefore; i <= daysAfter; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    dates.push(new Date(d.setHours(0, 0, 0, 0)));
+  }
+  return dates;
+}
+
+/**
+ * Short weekday label e.g. "Mon"
+ */
+export function shortDayLabel(date) {
+  return date.toLocaleDateString('en-US', { weekday: 'short' });
+}
 export function getGreeting() {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good Morning';
-  if (hour < 18) return 'Good Afternoon';
-  return 'Good Evening';
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
 }

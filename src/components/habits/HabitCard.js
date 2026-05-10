@@ -8,10 +8,10 @@ import MonthHeatmap from './MonthHeatmap';
 import { calculateStreak } from '../../utils/streakUtils';
 import { formatDate } from '../../utils/dateUtils';
 
-export default function HabitCard({ habit, logs, viewMode, onLog, onPress, onEdit, onDelete }) {
+export default function HabitCard({ habit, logs, viewMode, onLog, onPress, onEdit, onDelete, selectedDate }) {
   const { colors, radius, spacing } = useTheme();
-  const today = formatDate(new Date());
-  const logValue = logs[today] || 0;
+  const dateStr = selectedDate ? formatDate(selectedDate) : formatDate(new Date());
+  const logValue = logs[dateStr] || 0;
   const isAction = habit.type === 'action';
   const isCompleted = isAction ? logValue >= 1 : logValue >= (habit.goal || 1);
   const streak = calculateStreak(habit, logs);

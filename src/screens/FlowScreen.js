@@ -10,25 +10,45 @@ import TagPill from '../components/common/TagPill';
 import HabitCard from '../components/habits/HabitCard';
 import EmptyState from '../components/common/EmptyState';
 import HomeHeader from '../components/common/HomeHeader';
+import DateFilterBar from '../components/common/DateFilterBar';
+import { formatDate, getDayKey } from '../utils/dateUtils';
 
 export default function FlowScreen() {
   const { colors, spacing, radius } = useTheme();
   const navigation = useNavigation();
   const { getOrderedHabits, logs, logHabit, deleteHabit } = useHabitStore();
   const { tags = [] } = useTagStore();
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTag, setSelectedTag] = useState(null);
   const [viewMode, setViewMode] = useState('simple');
 
   const habits = getOrderedHabits();
+  const selectedDateStr = formatDate(selectedDate);
+  const selectedDayKey = getDayKey(selectedDate);
+
   const filtered = useMemo(() => {
-    if (!selectedTag) return habits;
-    return habits.filter((h) => h.tags?.includes(selectedTag));
-  }, [habits, selectedTag]);
+    return habits.filter((h) => {
+      // Must have started on or before selected date
+      if (h.startDate > selectedDateStr) return false;
+      // Must be scheduled for selected day of week
+      if (h.activeDays && h.activeDays.length > 0 && !h.activeDays.includes(selectedDayKey)) return false;
+      // Tag filter
+      if (selectedTag && !h.tags?.includes(selectedTag)) return false;
+      return true;
+    });
+  }, [habits, selectedDateStr, selectedDayKey, selectedTag]);
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
 
       <HomeHeader>
+        {/* Date filter bar */}
+        <View style={[styles.dateBar, { borderBottomColor: colors.border }]}>
+          <DateFilterBar selectedDate={selectedDate} onSelect={setSelectedDate} />
+        </View>
+
+        {/* Tag filter + view toggle */}
         <View style={[styles.tagBar, { borderBottomColor: colors.border }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagBarContent}>
             <TagPill label="All" selected={!selectedTag} onPress={() => setSelectedTag(null)} />
@@ -53,9 +73,9 @@ export default function FlowScreen() {
       {filtered.length === 0 ? (
         <EmptyState
           icon="zap"
-          title="No habits yet"
-          subtitle={selectedTag ? `No habits tagged "${selectedTag}"` : 'Start building your flow.'}
-          actionLabel={!selectedTag ? 'Create Habit' : undefined}
+          title="No habits for this day"
+          subtitle={selectedTag ? `No habits tagged "${selectedTag}" on this day.` : 'Nothing scheduled here.'}
+          actionLabel="Create Habit"
           onAction={() => navigation.navigate('CreateHabit')}
         />
       ) : (
@@ -69,11 +89,15 @@ export default function FlowScreen() {
               habit={item}
               logs={logs[item.id] || {}}
               viewMode={viewMode}
-              onLog={logHabit}
+              selectedDate={selectedDate}
+              onLog={(habitId, value) => {
+                const store = useHabitStore.getState();
+                store.logHabitDate(habitId, selectedDateStr, value);
+              }}
               onPress={() => navigation.navigate('HabitDetail', { habitId: item.id })}
               onEdit={() => navigation.navigate('CreateHabit', { habitId: item.id })}
               onDelete={() =>
-                Alert.alert('Delete Habit', `Delete "${item.title}"? This will also remove all its logs.`, [
+                Alert.alert('Delete Habit', `Delete "${item.title}"? All logs will be lost.`, [
                   { text: 'Cancel', style: 'cancel' },
                   { text: 'Delete', style: 'destructive', onPress: () => deleteHabit(item.id) },
                 ])
@@ -90,15 +114,15 @@ export default function FlowScreen() {
       >
         <Feather name="plus" size={24} color="#fff" />
       </TouchableOpacity>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen:       { flex: 1 },
-  tagBar:       { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, height: 48 },
-  tagBarContent:{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
-  viewToggle:   { paddingHorizontal: 14, height: '100%', alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1 },
-  fab:          { position: 'absolute', bottom: 24, right: 24, width: 52, height: 52, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#6366f1', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
+  screen:        { flex: 1 },
+  dateBar:       { borderBottomWidth: 1 },
+  tagBar:        { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, height: 48 },
+  tagBarContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
+  viewToggle:    { paddingHorizontal: 14, height: '100%', alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1 },
+  fab:           { position: 'absolute', bottom: 24, right: 24, width: 52, height: 52, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#6366f1', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
 });

@@ -53,10 +53,10 @@ export default function ProgressChart({ habit, logs }) {
         </Defs>
 
         {/* Y axis grid lines */}
-        {yLabels.map((v) => {
+        {yLabels.map((v, idx) => {
           const y = toY(v);
           return (
-            <React.Fragment key={v}>
+            <React.Fragment key={idx}>
               <Line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke={colors.border} strokeWidth={1} />
               <SvgText x={PAD.left - 4} y={y + 3} fill={colors.textMuted} fontSize={8} textAnchor="end">{v}</SvgText>
             </React.Fragment>
