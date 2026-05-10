@@ -37,7 +37,7 @@ export default function HomeHeader({ children }) {
 
 const styles = StyleSheet.create({
   header:  { borderBottomWidth: 1 },
-  top:     { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
+  top:     { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, paddingTop: 30 },
   icons:   { flexDirection: 'row', gap: 2 },
   iconBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
 });
