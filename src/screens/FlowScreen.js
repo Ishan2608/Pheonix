@@ -12,6 +12,7 @@ import EmptyState from '../components/common/EmptyState';
 import HomeHeader from '../components/common/HomeHeader';
 import DateFilterBar from '../components/common/DateFilterBar';
 import { formatDate, getDayKey } from '../utils/dateUtils';
+import { cancelHabitReminders } from '../utils/notificationUtils';
 
 export default function FlowScreen() {
   const { colors, spacing, radius } = useTheme();
@@ -24,20 +25,19 @@ export default function FlowScreen() {
   const [viewMode, setViewMode] = useState('simple');
 
   const habits = getOrderedHabits();
-  const selectedDateStr = formatDate(selectedDate);
-  const selectedDayKey = getDayKey(selectedDate);
+  const selectedDateStr = selectedDate ? formatDate(selectedDate) : null;
+  const selectedDayKey = selectedDate ? getDayKey(selectedDate) : null;
 
   const filtered = useMemo(() => {
     return habits.filter((h) => {
-      // Must have started on or before selected date
-      if (h.startDate > selectedDateStr) return false;
-      // Must be scheduled for selected day of week
-      if (h.activeDays && h.activeDays.length > 0 && !h.activeDays.includes(selectedDayKey)) return false;
-      // Tag filter
+      if (selectedDate) {
+        if (h.startDate > selectedDateStr) return false;
+        if (h.activeDays && h.activeDays.length > 0 && !h.activeDays.includes(selectedDayKey)) return false;
+      }
       if (selectedTag && !h.tags?.includes(selectedTag)) return false;
       return true;
     });
-  }, [habits, selectedDateStr, selectedDayKey, selectedTag]);
+  }, [habits, selectedDate, selectedDateStr, selectedDayKey, selectedTag]);
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
@@ -51,7 +51,7 @@ export default function FlowScreen() {
         {/* Tag filter + view toggle */}
         <View style={[styles.tagBar, { borderBottomColor: colors.border }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagBarContent}>
-            <TagPill label="All" selected={!selectedTag} onPress={() => setSelectedTag(null)} />
+            <TagPill label="All" selected={!selectedTag && !selectedDate} onPress={() => { setSelectedTag(null); setSelectedDate(null); }} />
             {tags.map((tag) => (
               <TagPill
                 key={tag}
@@ -99,7 +99,10 @@ export default function FlowScreen() {
               onDelete={() =>
                 Alert.alert('Delete Habit', `Delete "${item.title}"? All logs will be lost.`, [
                   { text: 'Cancel', style: 'cancel' },
-                  { text: 'Delete', style: 'destructive', onPress: () => deleteHabit(item.id) },
+                  { text: 'Delete', style: 'destructive', onPress: () => {
+                    cancelHabitReminders(item.notificationIds || []);
+                    deleteHabit(item.id);
+                  }},
                 ])
               }
             />

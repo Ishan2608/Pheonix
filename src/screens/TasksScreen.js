@@ -18,7 +18,7 @@ export default function TasksScreen() {
   const navigation = useNavigation();
   const { tasks = [], taskGroups = [], toggleTask, deleteTask, addGroup, renameGroup, deleteGroup } = useTaskStore();
 
-  const [activeGroup, setActiveGroup] = useState(taskGroups[0] || null);
+  const [activeGroup, setActiveGroup] = useState(null); // null = All
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
@@ -26,10 +26,14 @@ export default function TasksScreen() {
   const [renamingGroup, setRenamingGroup] = useState(null);
   const [renameValue, setRenameValue] = useState('');
 
-  const selectedDateStr = formatDate(selectedDate);
+  const selectedDateStr = selectedDate ? formatDate(selectedDate) : null;
 
   const groupTasks = tasks
-    .filter((t) => t.groupId === activeGroup && (!t.date || t.date === selectedDateStr))
+    .filter((t) => {
+      if (activeGroup && t.groupId !== activeGroup) return false;
+      if (selectedDate && t.date && t.date !== selectedDateStr) return false;
+      return true;
+    })
     .sort((a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
       if (a.date && b.date) return a.date.localeCompare(b.date);
@@ -85,7 +89,7 @@ export default function TasksScreen() {
         </View>
       </HomeHeader>
       <View style={[styles.listHeader, { borderBottomColor: colors.border }]}>
-        <AppText variant="title">{activeGroup || 'Tasks'}</AppText>
+        <AppText variant="title">{activeGroup || 'All Tasks'}</AppText>
         <TouchableOpacity onPress={() => setShowManageModal(true)} style={styles.iconBtn}>
           <Feather name="more-vertical" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -94,6 +98,14 @@ export default function TasksScreen() {
       {/* ── Group Tabs ── */}
       <View style={[styles.groupTabBar, { borderBottomColor: colors.border }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.groupTabContent}>
+          {/* All tab */}
+          <TouchableOpacity
+            onPress={() => { setActiveGroup(null); setSelectedDate(null); }}
+            style={[styles.groupTab, !activeGroup && !selectedDate && { borderBottomColor: colors.accent, borderBottomWidth: 2 }]}
+          >
+            <AppText variant="label" color={!activeGroup && !selectedDate ? colors.accent : colors.textMuted}>All</AppText>
+          </TouchableOpacity>
+
           {taskGroups.map((group) => {
             const active = activeGroup === group;
             return (
@@ -144,7 +156,7 @@ export default function TasksScreen() {
         <EmptyState
           icon="check-square"
           title="No tasks"
-          subtitle={`Add tasks to "${activeGroup}".`}
+          subtitle={activeGroup ? `Add tasks to "${activeGroup}".` : 'No tasks found.'}
           actionLabel="Add Task"
           onAction={() => navigation.navigate('CreateTask', { defaultGroup: activeGroup })}
         />
@@ -181,14 +193,12 @@ export default function TasksScreen() {
       )}
 
       {/* ── FAB ── */}
-      {activeGroup && (
-        <TouchableOpacity
-          onPress={() => navigation.navigate('CreateTask', { defaultGroup: activeGroup })}
-          style={[styles.fab, { backgroundColor: colors.accent, borderRadius: radius.full }]}
-        >
+      <TouchableOpacity
+        onPress={() => navigation.navigate('CreateTask', { defaultGroup: activeGroup || taskGroups[0] || null })}
+        style={[styles.fab, { backgroundColor: colors.accent, borderRadius: radius.full }]}
+      >
           <Feather name="plus" size={24} color="#fff" />
-        </TouchableOpacity>
-      )}
+      </TouchableOpacity>
 
       {/* ── New List Modal ── */}
       <Modal visible={showGroupModal} transparent animationType="fade" onRequestClose={() => setShowGroupModal(false)}>

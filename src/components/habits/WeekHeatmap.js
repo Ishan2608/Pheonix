@@ -5,25 +5,28 @@ import { getLastNDays } from '../../utils/dateUtils';
 import { getHeatmapIntensity } from '../../utils/streakUtils';
 import AppText from '../common/AppText';
 
-const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 export default function WeekHeatmap({ habit, logs }) {
   const { colors } = useTheme();
-  const days = getLastNDays(7);
+  const days = getLastNDays(7); // oldest → newest, last entry is today
 
   const intensityColor = (i) =>
     [colors.heatmap0, colors.heatmap1, colors.heatmap2, colors.heatmap3, colors.heatmap4][i];
 
   return (
     <View style={styles.row}>
-      {days.map((date, idx) => {
+      {days.map((date) => {
         const value = logs[date] || 0;
         const intensity = getHeatmapIntensity(value, habit);
+
+        // Derive label from the actual date string
+        const d = new Date(date + 'T00:00:00');
+        const label = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1);
+
         return (
           <View key={date} style={styles.cell}>
             <View style={[styles.block, { backgroundColor: intensityColor(intensity), borderColor: colors.border }]} />
             <AppText variant="caption" style={styles.dayLabel} color={colors.textMuted}>
-              {DAY_LABELS[idx]}
+              {label}
             </AppText>
           </View>
         );

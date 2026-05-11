@@ -9,6 +9,7 @@ import AppText from '../components/common/AppText';
 import MonthHeatmap from '../components/habits/MonthHeatmap';
 import ProgressChart from '../components/habits/ProgressChart';
 import { calculateStreak, calculateBestStreak, getCompletionRate } from '../utils/streakUtils';
+import { cancelHabitReminders } from '../utils/notificationUtils';
 
 export default function HabitDetailScreen() {
   const { colors, spacing, radius } = useTheme();
@@ -104,7 +105,11 @@ export default function HabitDetailScreen() {
           onPress={() =>
             Alert.alert('Delete Habit', `Delete "${habit.title}"? All logs and streak data will be lost.`, [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Delete', style: 'destructive', onPress: () => { deleteHabit(habit.id); navigation.goBack(); } },
+              { text: 'Delete', style: 'destructive', onPress: () => {
+                cancelHabitReminders(habit.notificationIds || []);
+                deleteHabit(habit.id);
+                navigation.goBack();
+              }},
             ])
           }
           style={[styles.deleteBtn, { borderColor: colors.danger, borderRadius: radius.md }]}

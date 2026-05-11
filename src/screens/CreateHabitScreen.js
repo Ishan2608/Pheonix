@@ -13,6 +13,7 @@ import AppText from '../components/common/AppText';
 import AppButton from '../components/common/AppButton';
 import DateTimeInput from '../components/common/DateTimeInput';
 import { formatDate } from '../utils/dateUtils';
+import { scheduleHabitReminders, cancelHabitReminders } from '../utils/notificationUtils';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
@@ -59,8 +60,11 @@ export default function CreateHabitScreen() {
     setNewTagInput('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) { Alert.alert('Title required'); return; }
+    const reminderStrings = reminders.map((r) =>
+      r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    );
     const data = {
       title: title.trim(),
       description: description.trim(),
@@ -70,14 +74,22 @@ export default function CreateHabitScreen() {
       type,
       goal: type === 'progress' ? parseFloat(goal) || 1 : undefined,
       unit: type === 'progress' ? unit.trim() : undefined,
-      reminders: reminders.map((r) =>
-        r.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-      ),
+      reminders: reminderStrings,
     };
+
     if (existing) {
-      updateHabit(editingId, data);
+      await cancelHabitReminders(existing.notificationIds || []);
+      const notificationIds = await scheduleHabitReminders({ ...data, id: editingId });
+      updateHabit(editingId, { ...data, notificationIds });
     } else {
       addHabit(data);
+      // Find the just-added habit and attach notification IDs
+      const { habits } = useHabitStore.getState();
+      const added = [...habits].reverse().find((h) => h.title === data.title);
+      if (added) {
+        const notificationIds = await scheduleHabitReminders(added);
+        updateHabit(added.id, { notificationIds });
+      }
     }
     navigation.goBack();
   };

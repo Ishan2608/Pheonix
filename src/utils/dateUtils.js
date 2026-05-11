@@ -1,7 +1,5 @@
-/**
- * Format a Date to YYYY-MM-DD in local time
- */
 export function formatDate(date) {
+  if (!date) return '';
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -12,9 +10,6 @@ export function today() {
   return formatDate(new Date());
 }
 
-/**
- * Returns array of YYYY-MM-DD strings for last N days (oldest first)
- */
 export function getLastNDays(n) {
   const dates = [];
   for (let i = n - 1; i >= 0; i--) {
@@ -25,9 +20,6 @@ export function getLastNDays(n) {
   return dates;
 }
 
-/**
- * Returns YYYY-MM-DD strings for every day in the current month
- */
 export function getCurrentMonthDays() {
   const now = new Date();
   const year = now.getFullYear();
@@ -41,30 +33,18 @@ export function getCurrentMonthDays() {
   return dates;
 }
 
-/**
- * e.g. "Monday, May 8"
- */
 export function formatDisplayDate(date = new Date()) {
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
-/**
- * Returns DAY_KEY string ('mon','tue',...) for a given Date object
- */
 export function getDayKey(date) {
+  if (!date) return '';
   return DAY_KEYS[date.getDay()];
 }
 
-/**
- * Returns array of Date objects for N days starting from offset days ago
- */
-export function getDateRange(daysBefore = 3, daysAfter = 10) {
+export function getDateRange(daysBefore = 7, daysAfter = 14) {
   const dates = [];
   for (let i = -daysBefore; i <= daysAfter; i++) {
     const d = new Date();
@@ -74,12 +54,11 @@ export function getDateRange(daysBefore = 3, daysAfter = 10) {
   return dates;
 }
 
-/**
- * Short weekday label e.g. "Mon"
- */
 export function shortDayLabel(date) {
+  if (!date) return '';
   return date.toLocaleDateString('en-US', { weekday: 'short' });
 }
+
 export function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good morning';
